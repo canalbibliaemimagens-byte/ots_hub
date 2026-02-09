@@ -1,0 +1,19 @@
+[Unit]
+Description=Cloudflare Tunnel for OTS Hub
+After=network-online.target ots-hub.service
+Wants=network-online.target
+Requires=ots-hub.service
+
+[Service]
+Type=simple
+User=ubuntu
+Environment="SUPABASE_URL=https://erinxuykijsydorlgjgy.supabase.co"
+Environment="SUPABASE_KEY=YOUR_SERVICE_ROLE_KEY_HERE"
+Environment="SERVICE_NAME=ots-hub"
+Environment="LOCAL_PORT=8000"
+ExecStart=/home/ubuntu/ots_hub/scripts/cloudflare_tunnel.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
