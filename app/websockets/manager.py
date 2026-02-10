@@ -34,6 +34,15 @@ class ConnectionManager:
         self._connections: Dict[str, ConnectionInfo] = {}
 
     async def connect(self, websocket: WebSocket, instance_id: str) -> ConnectionInfo:
+        # Close stale connection if exists (e.g. client reconnected)
+        old = self._connections.get(instance_id)
+        if old and old.websocket != websocket:
+            try:
+                await old.websocket.close(code=4000, reason="Replaced by new connection")
+            except Exception:
+                pass
+            logger.info(f"Replaced stale connection: {instance_id}")
+
         await websocket.accept()
         info = ConnectionInfo(websocket, instance_id)
         self._connections[instance_id] = info

@@ -143,8 +143,8 @@ async def route_message(raw_data: str, instance_id: str) -> str:
             return _error("Command requires 'action'", ref_id=msg_id)
 
         if not target:
-            for role in ("bot", "preditor", "executor", "connector"):
-                candidates = manager.get_by_role(role)
+            for role in ("connector", "executor", "preditor", "bot"):
+                candidates = [c for c in manager.get_by_role(role) if c != instance_id]
                 if candidates:
                     target = candidates[0]
                     break
