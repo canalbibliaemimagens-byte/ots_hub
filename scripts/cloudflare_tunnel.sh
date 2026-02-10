@@ -106,8 +106,8 @@ if [ -z "$TUNNEL_URL" ]; then
 fi
 
 # Gera URLs para WebSocket
-WS_URL="${TUNNEL_URL/https:/ws:}/ws/dashboard"
-WSS_URL="${TUNNEL_URL/https:/wss:}/ws/dashboard"
+WS_URL="${TUNNEL_URL/https:/ws:}"
+WSS_URL="${TUNNEL_URL/https:/wss:}"
 
 log "WS URL: $WS_URL"
 log "WSS URL: $WSS_URL"
