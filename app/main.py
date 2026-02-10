@@ -12,17 +12,13 @@ import time
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.config import settings
+from app.core.config_supabase import settings, init_settings
 from app.websockets.manager import manager
 from app.websockets.router import route_message
 from app.modules.telemetry.service import telemetry_store
 from app.modules.commands.service import command_router
 
-logging.basicConfig(
-    level=logging.DEBUG if settings.DEBUG else logging.INFO,
-    format="%(asctime)s [%(name)s] %(levelname)s — %(message)s",
-    datefmt="%H:%M:%S",
-)
+# Logging will be configured after settings are loaded
 logger = logging.getLogger("hub")
 
 app = FastAPI(
@@ -164,7 +160,19 @@ _start_time = time.time()
 
 @app.on_event("startup")
 async def startup():
+    # Load settings from Supabase
+    await init_settings()
+
+    # Configure logging now that settings are loaded
+    logging.basicConfig(
+        level=logging.DEBUG if settings.DEBUG else logging.INFO,
+        format="%(asctime)s [%(name)s] %(levelname)s — %(message)s",
+        datefmt="%H:%M:%S",
+        force=True,  # Override existing config
+    )
+
     logger.info(f"OTS Hub v{settings.VERSION} starting on {settings.HOST}:{settings.PORT}")
+    logger.info(f"Supabase: {'✅ Connected' if settings.SUPABASE_URL else '❌ Not configured'}")
     asyncio.create_task(_stale_connection_cleanup())
 
 

@@ -132,7 +132,7 @@ async def route_message(raw_data: str, instance_id: str) -> str:
     # ── COMMAND (admin/dashboard → qualquer processo) ────
     if msg_type == "command":
         conn_info = manager.get(instance_id)
-        if not conn_info or conn_info.role not in ("admin", "dashboard"):
+        if not conn_info or conn_info.role not in ("admin", "dashboard", "preditor", "executor"):
             return _error("Only admin/dashboard can send commands", ref_id=msg_id)
 
         target = payload.get("target")

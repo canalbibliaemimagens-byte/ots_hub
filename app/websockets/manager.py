@@ -37,13 +37,13 @@ class ConnectionManager:
         await websocket.accept()
         info = ConnectionInfo(websocket, instance_id)
         self._connections[instance_id] = info
-        logger.info(f"Connected: {instance_id}")
+        logger.info(f"Connected: {instance_id} (total={len(self._connections)})")
         return info
 
     def disconnect(self, instance_id: str):
         if instance_id in self._connections:
             del self._connections[instance_id]
-            logger.info(f"Disconnected: {instance_id}")
+            logger.info(f"Disconnected: {instance_id} (total={len(self._connections)})")
 
     def authenticate(self, instance_id: str, role: str = "bot"):
         if instance_id in self._connections:
@@ -72,7 +72,16 @@ class ConnectionManager:
 
     async def broadcast(self, message: str, role: Optional[str] = None,
                         exclude: Optional[str] = None):
-        for iid, conn in self._connections.items():
+        """
+        Broadcast para conexões autenticadas.
+        Itera sobre snapshot do dict para evitar RuntimeError se
+        conexões são adicionadas/removidas durante o broadcast.
+        """
+        # Snapshot — evita "dictionary changed size during iteration"
+        targets = list(self._connections.items())
+        dead = []
+
+        for iid, conn in targets:
             if not conn.authenticated:
                 continue
             if exclude and iid == exclude:
@@ -83,6 +92,12 @@ class ConnectionManager:
                 await conn.websocket.send_text(message)
             except Exception as e:
                 logger.error(f"Broadcast to {iid} failed: {e}")
+                dead.append(iid)
+
+        # Remove conexões mortas detectadas durante broadcast
+        for iid in dead:
+            logger.warning(f"Removing dead connection: {iid}")
+            self._connections.pop(iid, None)
 
     def list_connections(self) -> list:
         return [

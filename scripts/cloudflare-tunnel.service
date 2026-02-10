@@ -7,8 +7,9 @@ Requires=ots-hub.service
 [Service]
 Type=simple
 User=ubuntu
-Environment="SUPABASE_URL=https://erinxuykijsydorlgjgy.supabase.co"
-Environment="SUPABASE_KEY=YOUR_SERVICE_ROLE_KEY_HERE"
+# Carrega variáveis do arquivo .env
+EnvironmentFile=/home/ubuntu/ots_hub/.env
+# Variáveis extras ou overrides se precisar
 Environment="SERVICE_NAME=ots-hub"
 Environment="LOCAL_PORT=8000"
 ExecStart=/home/ubuntu/ots_hub/scripts/cloudflare_tunnel.sh

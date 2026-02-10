@@ -31,18 +31,22 @@ send_to_supabase() {
         return 0
     fi
     
-    # 1. INSERT primeiro (ignora erro se já existe)
-    curl -s -X POST "${SUPABASE_URL}/rest/v1/tunnel_config" \
+    # UPSERT (Insert ou Update se existir)
+    # Usa on_conflict=service_name
+    curl -s -X POST "${SUPABASE_URL}/rest/v1/tunnel_config?on_conflict=service_name" \
         -H "apikey: ${SUPABASE_KEY}" \
         -H "Authorization: Bearer ${SUPABASE_KEY}" \
         -H "Content-Type: application/json" \
-        -H "Prefer: return=minimal" \
+        -H "Prefer: resolution=merge-duplicates" \
         -d "{
             \"service_name\": \"${SERVICE_NAME}\",
             \"ws_url\": \"${ws_url}\",
             \"wss_url\": \"${wss_url}\",
             \"updated_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
-        }" 2>/dev/null || true
+        }" > /dev/null
+    
+    log "URL enviada ao Supabase (UPSERT): ${wss_url}"
+}
     
     # 2. UPDATE para garantir (caso já existia)
     curl -s -X PATCH "${SUPABASE_URL}/rest/v1/tunnel_config?service_name=eq.${SERVICE_NAME}" \
