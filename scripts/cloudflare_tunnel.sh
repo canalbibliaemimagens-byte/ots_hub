@@ -46,7 +46,6 @@ send_to_supabase() {
         }" > /dev/null
     
     log "URL enviada ao Supabase (UPSERT): ${wss_url}"
-}
     
     # 2. UPDATE para garantir (caso já existia)
     curl -s -X PATCH "${SUPABASE_URL}/rest/v1/tunnel_config?service_name=eq.${SERVICE_NAME}" \
